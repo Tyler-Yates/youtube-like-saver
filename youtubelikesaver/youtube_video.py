@@ -11,4 +11,4 @@ class YoutubeVideo:
         return self.__str__()
 
     def __str__(self):
-        return self.video_title
+        return f"{self.video_id} - {self.video_title}"
