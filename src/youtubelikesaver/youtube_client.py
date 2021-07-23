@@ -1,12 +1,13 @@
 import os
 import pickle
 
+import google_auth_httplib2
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
+import httplib2
 from google.auth.credentials import Credentials
-from google_auth_httplib2 import Request
 
-from youtubelikesaver.youtube_video import YoutubeVideo
+from .youtube_video import YoutubeVideo
 
 MAX_RESULTS = 100
 
@@ -37,7 +38,9 @@ class YoutubeClient:
             if credentials and credentials.expired and credentials.refresh_token:
                 # We have expired credentials so we can just refresh them
                 print("Refreshing access token...")
-                credentials.refresh(Request())
+                http = httplib2.Http()
+                request = google_auth_httplib2.Request(http)
+                credentials.refresh(request)
             else:
                 # Get credentials and create an API client
                 flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(client_secrets_file_name,
