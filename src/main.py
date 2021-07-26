@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from typing import List
 
 from youtubelikesaver.youtube_client import YoutubeClient
@@ -9,12 +10,11 @@ CLIENT_SECRETS_FILE_NAME = "client_secrets.json"
 BACKUP_FILE_NAME = "liked_videos.json"
 
 
-def save_liked_videos(liked_videos: List[YoutubeVideo]):
+def save_liked_videos(liked_videos: List[YoutubeVideo], backup_file_location: str):
     json_data = dict()
     for liked_video in liked_videos:
         json_data[liked_video.video_id] = liked_video.video_title
 
-    backup_file_location = os.environ.get("BACKUP_FILE_LOCATION", "")
     backup_file_path = os.path.join(backup_file_location, BACKUP_FILE_NAME)
     print(f"Saving liked videos backup file at {backup_file_path}")
     with open(backup_file_path, mode='w', encoding="utf-8") as backup_file:
@@ -22,6 +22,14 @@ def save_liked_videos(liked_videos: List[YoutubeVideo]):
 
 
 def main():
+    if len(sys.argv) == 1:
+        backup_file_location = ""
+    elif len(sys.argv) == 2:
+        backup_file_location = sys.argv[1]
+    else:
+        print("Incorrect number of arguments.")
+        sys.exit(1)
+
     youtube_client = YoutubeClient(CLIENT_SECRETS_FILE_NAME)
 
     print("Fetching liked videos...")
@@ -29,7 +37,7 @@ def main():
     print(liked_videos)
     print(len(liked_videos))
 
-    save_liked_videos(liked_videos)
+    save_liked_videos(liked_videos, backup_file_location)
 
 
 if __name__ == "__main__":
