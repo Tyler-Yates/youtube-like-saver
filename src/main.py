@@ -13,7 +13,7 @@ BACKUP_FILE_NAME = "liked_videos.json"
 def save_liked_videos(liked_videos: List[YoutubeVideo], backup_file_location: str):
     json_data = dict()
     for liked_video in liked_videos:
-        json_data[liked_video.video_id] = liked_video.video_title
+        json_data[liked_video.video_url] = liked_video.video_title
 
     backup_file_path = os.path.join(backup_file_location, BACKUP_FILE_NAME)
     print(f"Saving liked videos backup file at {backup_file_path}")
