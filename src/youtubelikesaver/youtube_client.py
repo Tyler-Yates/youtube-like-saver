@@ -6,6 +6,7 @@ import google_auth_oauthlib.flow
 import googleapiclient.discovery
 import httplib2
 from google.auth.credentials import Credentials
+from google.auth.exceptions import RefreshError
 
 from .youtube_video import YoutubeVideo
 
@@ -33,19 +34,22 @@ class YoutubeClient:
             with open(CREDENTIALS_FILE, mode="rb") as credentials_file:
                 credentials = pickle.load(credentials_file)
 
-        # If we are missing credentials or they are no longer valid, fetch new ones
-        if not credentials or not credentials.valid:
-            if credentials and credentials.expired and credentials.refresh_token:
-                # We have expired credentials so we can just refresh them
-                print("Refreshing access token...")
-                http = httplib2.Http()
-                request = google_auth_httplib2.Request(http)
+        # Try to refresh the token first
+        if credentials and credentials.expired and credentials.refresh_token:
+            # We have expired credentials so we can just refresh them
+            print("Refreshing access token...")
+            http = httplib2.Http()
+            request = google_auth_httplib2.Request(http)
+            try:
                 credentials.refresh(request)
-            else:
-                # Get credentials and create an API client
-                flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(client_secrets_file_name,
-                                                                                           scopes)
-                credentials = flow.run_console()
+            except RefreshError:
+                print("Refresh token has expired. Must generate a new one.")
+
+        # If we do not have credentials then we need to fetch them from scratch
+        if not credentials or not credentials.valid:
+            # Get credentials and create an API client
+            flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(client_secrets_file_name, scopes)
+            credentials = flow.run_local_server()
 
             # Save the credentials for the next run
             with open(CREDENTIALS_FILE, 'wb') as f:
