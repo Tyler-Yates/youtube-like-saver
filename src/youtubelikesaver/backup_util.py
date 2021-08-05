@@ -5,14 +5,16 @@ import pafy
 
 class BackupUtil:
     def __init__(self, backup_location: str):
-        self.backup_location = backup_location
-        if not os.path.exists(self.backup_location):
-            raise ValueError(f"Backup location {self.backup_location} does not exist")
-        if not os.path.isdir(self.backup_location):
-            raise ValueError(f"Backup location {self.backup_location} is not a directory")
+        if not os.path.exists(backup_location):
+            raise ValueError(f"Backup location {backup_location} does not exist")
+        if not os.path.isdir(backup_location):
+            raise ValueError(f"Backup location {backup_location} is not a directory")
+
+        self.backup_location = os.path.join(backup_location, "videoaudio")
+        os.makedirs(self.backup_location)
 
         self.videos_already_backed_up = set()
-        self.completed_file_path = os.path.join(backup_location, "completed.txt")
+        self.completed_file_path = os.path.join(self.backup_location, "completed.txt")
         if os.path.exists(self.completed_file_path):
             with open(self.completed_file_path, mode='r') as completed_file:
                 for line in completed_file.readlines():
