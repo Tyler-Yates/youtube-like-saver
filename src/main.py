@@ -3,7 +3,7 @@ import os
 import sys
 from typing import List
 
-from src.youtubelikesaver.backup_util import save_audio_and_video
+from src.youtubelikesaver.backup_util import BackupUtil
 from youtubelikesaver.youtube_client import YoutubeClient
 from youtubelikesaver.youtube_video import YoutubeVideo
 
@@ -23,8 +23,12 @@ def save_liked_videos(liked_videos: List[YoutubeVideo], backup_file_location: st
 
 
 def backup_liked_videos(liked_videos: List[YoutubeVideo], backup_file_location: str):
+    backup_util = BackupUtil(backup_file_location)
+
     for liked_video in liked_videos:
-        save_audio_and_video(liked_video.video_url, backup_file_location)
+        print(f"Backing up video and audio for '{liked_video.video_title}'...")
+        backup_util.save_audio_and_video(liked_video.video_url)
+        print("Done\n")
 
 
 def main():
