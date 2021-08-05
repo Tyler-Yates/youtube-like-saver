@@ -11,7 +11,8 @@ class BackupUtil:
             raise ValueError(f"Backup location {backup_location} is not a directory")
 
         self.backup_location = os.path.join(backup_location, "videoaudio")
-        os.makedirs(self.backup_location)
+        if not os.path.exists(self.backup_location):
+            os.makedirs(self.backup_location)
 
         self.videos_already_backed_up = set()
         self.completed_file_path = os.path.join(self.backup_location, "completed.txt")
