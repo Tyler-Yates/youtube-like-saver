@@ -1,8 +1,8 @@
 # youtube-like-saver
-Simple Python application to save metadata about liked videos in YouTube.
+Simple Python application to save metadata about liked videos in YouTube and then backup the audio and video stream.
 
 Videos can be taken down or made private, at which point the title of the video will become unavailable.
-By saving your list of liked videos, you can ensure that you don't lose the titles for your liked videos.
+By backing up your liked videos, you can ensure that you don't lose access to them.
 
 ## Authentication
 
