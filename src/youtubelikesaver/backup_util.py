@@ -1,6 +1,6 @@
 import os
 
-import pafy
+import youtube_dl
 
 
 class BackupUtil:
@@ -28,9 +28,22 @@ class BackupUtil:
             print(f"Video {video_url} already backed up")
             return
 
-        video = pafy.new(video_url)
-        video.getbestvideo().download(filepath=self.backup_location)
-        video.getbestaudio().download(filepath=self.backup_location)
+        ydl_config = {
+            "format": "bestvideo+bestaudio",
+            'outtmpl': os.path.join(self.backup_location, '%(title)s.%(ext)s'),
+            "merge_output_format": "mkv",
+            "writethumbnail": True
+        }
+        with youtube_dl.YoutubeDL(ydl_config) as ydl:
+            result = ydl.download([video_url])
+            print(result)
+        ydl_config = {
+            "format": "bestaudio",
+            'outtmpl': os.path.join(self.backup_location, '%(title)s.%(ext)s'),
+        }
+        with youtube_dl.YoutubeDL(ydl_config) as ydl:
+            result = ydl.download([video_url])
+            print(result)
 
         with open(self.completed_file_path, mode='a+') as completed_file:
             completed_file.write(f"{video_url}\n")
