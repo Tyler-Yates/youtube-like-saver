@@ -3,7 +3,7 @@ import os
 import sys
 from typing import List
 
-from src.youtubelikesaver.backup_util import BackupUtil
+from youtubelikesaver.src.backup_util import BackupUtil
 from youtubelikesaver.youtube_client import YoutubeClient
 from youtubelikesaver.youtube_video import YoutubeVideo
 
@@ -18,7 +18,7 @@ def save_liked_videos(liked_videos: List[YoutubeVideo], backup_file_location: st
 
     backup_file_path = os.path.join(backup_file_location, BACKUP_FILE_NAME)
     print(f"Saving liked videos backup file at {backup_file_path}")
-    with open(backup_file_path, mode='w', encoding="utf-8") as backup_file:
+    with open(backup_file_path, mode="w", encoding="utf-8") as backup_file:
         json.dump(json_data, backup_file, indent=4, ensure_ascii=False)
 
 

@@ -1,3 +1,6 @@
+#Built-in
+/.tox/
+
 # Secrets
 client_secrets.json
 credentials.pickle

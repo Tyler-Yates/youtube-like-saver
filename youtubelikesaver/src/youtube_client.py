@@ -12,7 +12,7 @@ from .youtube_video import YoutubeVideo
 
 MAX_RESULTS = 100
 
-CREDENTIALS_FILE = 'credentials.pickle'
+CREDENTIALS_FILE = "credentials.pickle"
 
 API_SERVICE_NAME = "youtube"
 API_VERSION = "v3"
@@ -52,8 +52,8 @@ class YoutubeClient:
             credentials = flow.run_local_server()
 
             # Save the credentials for the next run
-            with open(CREDENTIALS_FILE, 'wb') as f:
-                print('Saving Credentials for future use...')
+            with open(CREDENTIALS_FILE, "wb") as f:
+                print("Saving Credentials for future use...")
                 pickle.dump(credentials, f)
 
         # Create the Youtube client
@@ -63,22 +63,24 @@ class YoutubeClient:
         liked_videos = []
 
         request = self.youtube.videos().list(
-            part="snippet,contentDetails,statistics",
-            maxResults=MAX_RESULTS,
-            myRating="like"
+            part="snippet,contentDetails,statistics", maxResults=MAX_RESULTS, myRating="like"
         )
         response = request.execute()
 
         while response is not None:
-            for liked_video in response['items']:
+            for liked_video in response["items"]:
                 liked_videos.append(YoutubeVideo(liked_video))
-            if response.get('nextPageToken'):
-                response = self.youtube.videos().list(
-                    part="snippet,contentDetails,statistics",
-                    maxResults=MAX_RESULTS,
-                    pageToken=response['nextPageToken'],
-                    myRating="like"
-                ).execute()
+            if response.get("nextPageToken"):
+                response = (
+                    self.youtube.videos()
+                    .list(
+                        part="snippet,contentDetails,statistics",
+                        maxResults=MAX_RESULTS,
+                        pageToken=response["nextPageToken"],
+                        myRating="like",
+                    )
+                    .execute()
+                )
             else:
                 response = None
 
