@@ -4,8 +4,8 @@ import sys
 from typing import List
 
 from youtubelikesaver.src.backup_util import BackupUtil
-from youtubelikesaver.youtube_client import YoutubeClient
-from youtubelikesaver.youtube_video import YoutubeVideo
+from youtubelikesaver.src.youtube_client import YoutubeClient
+from youtubelikesaver.src.youtube_video import YoutubeVideo
 
 CLIENT_SECRETS_FILE_NAME = "client_secrets.json"
 BACKUP_FILE_NAME = "liked_videos.json"

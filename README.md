@@ -34,7 +34,7 @@ pip install -r requirements.txt
 
 Run the program from the root of the repository:
 ```
-python3 src/main.py
+python3 -m youtubelikesaver
 ```
 
 Open the link printed out to the console and go through the necessary steps until you can copy the credential string.
