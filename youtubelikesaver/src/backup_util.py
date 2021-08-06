@@ -17,7 +17,7 @@ class BackupUtil:
             os.makedirs(self.backup_location)
 
         self.videos_already_backed_up = set()
-        self.completed_file_path = os.path.join(self.backup_location, "completed.txt")
+        self.completed_file_path = os.path.join(backup_location, "completed.txt")
         if os.path.exists(self.completed_file_path):
             with open(self.completed_file_path, mode="r") as completed_file:
                 for line in completed_file.readlines():
