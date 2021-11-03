@@ -15,6 +15,6 @@ class TestBackupUtil:
         assert "completed.txt" in listdir
 
         listdir = os.listdir(os.path.join(tmpdir, BACKUP_SUBFOLDER))
-        assert ("%s.m4a" % TEST_VIDEO_TITLE) in listdir
+        assert ("%s.webm" % TEST_VIDEO_TITLE) in listdir
         assert ("%s.mkv" % TEST_VIDEO_TITLE) in listdir
         assert ("%s.webp" % TEST_VIDEO_TITLE) in listdir

@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Dict
 
-import youtube_dl
+import yt_dlp
 
 BACKUP_SUBFOLDER = "videoaudio"
 MAX_RETRIES = 5
@@ -57,7 +57,7 @@ class BackupUtil:
     def _save_video_with_retry(video_url: str, ydl_config: Dict):
         for i in range(MAX_RETRIES):
             try:
-                with youtube_dl.YoutubeDL(ydl_config) as ydl:
+                with yt_dlp.YoutubeDL(ydl_config) as ydl:
                     ydl.download([video_url])
                     return
             except Exception as e:
