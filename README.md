@@ -12,7 +12,7 @@ By backing up your liked videos, you can ensure that you don't lose access to th
 Fetching the user's list of liked videos requires authentication, so you will need to set up OAuth flow.
 
 1. Create a new project in [Google Cloud Platform](https://console.cloud.google.com/apis/dashboard).
-1. Add the "YouTube Data API v3" to your project.
+1. Add the "YouTube Data API v3" to your project with "/youtube.readonly" scope.
 1. Create a new OAuth credential.
 1. Add your desired YouTube account as a test user for your application.
 1. Save the client secrets JSON file to the root of this repository with the name `client_secrets.json`.
