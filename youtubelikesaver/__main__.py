@@ -60,7 +60,7 @@ def backup_playlist_video_information(backup_file_location: str, playlist_name: 
             continue
 
         print(f"Saving data for video {playlist_name}: {video.video_title}")
-        with open(video_file_path, mode="w") as video_file:
+        with open(video_file_path, mode="w", encoding="utf-8") as video_file:
             video_file.write(video.video_url)
             video_file.write("\n")
             video_file.write(video.video_title)
