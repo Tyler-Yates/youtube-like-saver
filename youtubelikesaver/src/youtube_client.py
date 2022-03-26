@@ -1,5 +1,6 @@
 import os
 import pickle
+from typing import Dict, List
 
 import google_auth_httplib2
 import google_auth_oauthlib.flow
@@ -59,7 +60,53 @@ class YoutubeClient:
         # Create the Youtube client
         self.youtube = googleapiclient.discovery.build(API_SERVICE_NAME, API_VERSION, credentials=credentials)
 
-    def get_liked_videos(self):
+    def get_playlists_and_liked_videos(self) -> Dict[str, List[YoutubeVideo]]:
+        playlist_name_to_videos = dict()
+
+        request = self.youtube.playlists().list(part="id,snippet", mine=True)
+        response = request.execute()
+
+        # Fetch playlists
+        while response is not None:
+            for playlist in response["items"]:
+                playlist_id = playlist["id"]
+                playlist_name = playlist["snippet"]["title"]
+                print(f"Processing playlist {playlist_name}...")
+                playlist_name_to_videos[playlist_name] = self._get_videos_for_playlist(playlist_id)
+            if response.get("nextPageToken"):
+                response = self.youtube.playlists().list(part="id,snippet", mine=True).execute()
+            else:
+                response = None
+
+        # Liked videos are not a playlist so get them separately
+        print("Processing liked videos...")
+        playlist_name_to_videos["Liked"] = self._get_liked_videos()
+
+        return playlist_name_to_videos
+
+    def _get_videos_for_playlist(self, playlist_id: str) -> List[YoutubeVideo]:
+        playlist_videos = []
+
+        request = self.youtube.playlistItems().list(
+            playlistId=playlist_id, part="snippet,contentDetails,id", maxResults=MAX_RESULTS
+        )
+        response = request.execute()
+
+        while response is not None:
+            for playlist_video in response["items"]:
+                playlist_videos.append(YoutubeVideo(playlist_video))
+            if response.get("nextPageToken"):
+                response = (
+                    self.youtube.playlistItems()
+                    .list(playlistId=playlist_id, part="snippet,contentDetails,id", maxResults=MAX_RESULTS)
+                    .execute()
+                )
+            else:
+                response = None
+
+        return playlist_videos
+
+    def _get_liked_videos(self):
         liked_videos = []
 
         request = self.youtube.videos().list(
