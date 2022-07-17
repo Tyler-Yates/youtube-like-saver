@@ -1,60 +1,47 @@
 import logging
-import os
 from typing import Dict
 
 import yt_dlp
 
-BACKUP_SUBFOLDER = "videoaudio"
 MAX_RETRIES = 5
+
+MAX_VIDEO_DOWNLOAD_SIZE = "200M"
+MAX_AUDIO_DOWNLOAD_SIZE = "75M"
 
 LOG = logging.getLogger("BackupUtil")
 logging.basicConfig()
 
 
 class BackupUtil:
-    def __init__(self, backup_location: str):
-        if not os.path.exists(backup_location):
-            raise ValueError(f"Backup location {backup_location} does not exist")
-        if not os.path.isdir(backup_location):
-            raise ValueError(f"Backup location {backup_location} is not a directory")
+    def __init__(self):
+        pass
 
-        self.backup_location = os.path.join(backup_location, BACKUP_SUBFOLDER)
-        if not os.path.exists(self.backup_location):
-            os.makedirs(self.backup_location)
-
-        self.videos_already_backed_up = set()
-        self.completed_file_path = os.path.join(backup_location, "completed.txt")
-        if os.path.exists(self.completed_file_path):
-            with open(self.completed_file_path, mode="r") as completed_file:
-                for line in completed_file.readlines():
-                    line = line.strip()
-                    if line:
-                        self.videos_already_backed_up.add(line.strip())
-
-    def save_audio_and_video(self, video_url: str):
-        if video_url in self.videos_already_backed_up:
-            print(f"Video {video_url} already backed up")
-            return
-
+    def save_video(self, video_url: str, output_path: str, output_file_name: str):
         ydl_config = {
             "format": "bestvideo+bestaudio",
-            "outtmpl": os.path.join(self.backup_location, "%(title)s.%(ext)s"),
             "merge_output_format": "mkv",
+            "format_sort": [f"size:{MAX_VIDEO_DOWNLOAD_SIZE}"],
+            "paths": {"home": output_path},
+            "outtmpl": f"{output_file_name}.%(ext)s",
             "writethumbnail": True,
+            "windowsfilenames": True,
+            "overwrites": False,
         }
-        self._save_video_with_retry(video_url, ydl_config)
+        self._save_with_retry(video_url, ydl_config)
 
+    def save_audio(self, video_url: str, output_path: str, output_file_name: str):
         ydl_config = {
             "format": "bestaudio",
-            "outtmpl": os.path.join(self.backup_location, "%(title)s.%(ext)s"),
+            "format_sort": [f"size:{MAX_AUDIO_DOWNLOAD_SIZE}"],
+            "paths": {"home": output_path},
+            "outtmpl": f"{output_file_name}.%(ext)s",
+            "windowsfilenames": True,
+            "overwrites": False,
         }
-        self._save_video_with_retry(video_url, ydl_config)
-
-        with open(self.completed_file_path, mode="a+") as completed_file:
-            completed_file.write(f"{video_url}\n")
+        self._save_with_retry(video_url, ydl_config)
 
     @staticmethod
-    def _save_video_with_retry(video_url: str, ydl_config: Dict):
+    def _save_with_retry(video_url: str, ydl_config: Dict):
         for i in range(MAX_RETRIES):
             try:
                 with yt_dlp.YoutubeDL(ydl_config) as ydl:

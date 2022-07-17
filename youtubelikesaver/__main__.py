@@ -1,4 +1,3 @@
-import json
 import os
 import re
 import sys
@@ -11,26 +10,6 @@ from youtubelikesaver.src.youtube_video import YoutubeVideo
 
 CLIENT_SECRETS_FILE_NAME = "client_secrets.json"
 BACKUP_FILE_NAME = "liked_videos.json"
-
-
-def save_liked_videos(liked_videos: List[YoutubeVideo], backup_file_location: str):
-    json_data = dict()
-    for liked_video in liked_videos:
-        json_data[liked_video.video_url] = liked_video.video_title
-
-    backup_file_path = os.path.join(backup_file_location, BACKUP_FILE_NAME)
-    print(f"Saving liked videos backup file at {backup_file_path}")
-    with open(backup_file_path, mode="w", encoding="utf-8") as backup_file:
-        json.dump(json_data, backup_file, indent=4, ensure_ascii=False)
-
-
-def backup_liked_videos(liked_videos: List[YoutubeVideo], backup_file_location: str):
-    backup_util = BackupUtil(backup_file_location)
-
-    for liked_video in liked_videos:
-        print(f"Backing up video and audio for '{liked_video.video_title}'...")
-        backup_util.save_audio_and_video(liked_video.video_url)
-        print("Done\n")
 
 
 def _slugify(value, allow_unicode=False):
@@ -51,21 +30,32 @@ def _slugify(value, allow_unicode=False):
 
 
 def backup_playlist_video_information(backup_file_location: str, playlist_name: str, videos: List[YoutubeVideo]):
+    backup_util = BackupUtil()
+
     playlist_path = os.path.join(backup_file_location, playlist_name)
     os.makedirs(playlist_path, exist_ok=True)
     for video in videos:
-        video_file_path = os.path.join(playlist_path, f"{_slugify(video.video_title)}.txt")
+        slugified_video_title = _slugify(video.video_title) + f"={video.video_id}"
+        video_file_path = os.path.join(playlist_path, f"{slugified_video_title}.txt")
         if os.path.exists(video_file_path):
             print(f"Already saved data for video {playlist_name}: {video.video_title}")
-            continue
+        else:
+            print(f"Saving data for video {playlist_name}: {video.video_title}")
+            with open(video_file_path, mode="w", encoding="utf-8") as video_file:
+                video_file.write(video.video_url)
+                video_file.write("\n")
+                video_file.write(video.video_title)
+                video_file.write("\n")
+                video_file.write(video.description)
 
-        print(f"Saving data for video {playlist_name}: {video.video_title}")
-        with open(video_file_path, mode="w", encoding="utf-8") as video_file:
-            video_file.write(video.video_url)
-            video_file.write("\n")
-            video_file.write(video.video_title)
-            video_file.write("\n")
-            video_file.write(video.description)
+        # Always save audio only
+        print("Saving audio...")
+        backup_util.save_audio(video.video_url, playlist_path, slugified_video_title)
+
+        # Only save video for select playlists
+        if playlist_name.lower().startswith("save video"):
+            print("Saving video...")
+            backup_util.save_video(video.video_url, playlist_path, slugified_video_title)
 
 
 def main():
