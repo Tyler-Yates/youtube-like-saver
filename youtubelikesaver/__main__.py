@@ -48,14 +48,14 @@ def backup_playlist_video_information(backup_file_location: str, playlist_name: 
                 video_file.write("\n")
                 video_file.write(video.description)
 
-        # Always save audio only
-        print("Saving audio...")
-        backup_util.save_audio(video.video_url, playlist_path, slugified_video_title)
-
-        # Only save video for select playlists
+        # Save video and audio for select playlists
         if playlist_name.lower().startswith("save video"):
             print("Saving video...")
             backup_util.save_video(video.video_url, playlist_path, slugified_video_title)
+        else:
+            # Save only audio for all other playlists
+            print("Saving audio...")
+            backup_util.save_audio(video.video_url, playlist_path, slugified_video_title)
 
 
 def main():
