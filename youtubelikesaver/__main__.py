@@ -29,41 +29,50 @@ def _slugify(value, allow_unicode=False):
 
 
 def backup_playlist_video_information(
-    backup_file_location: str, temp_file_location: str, playlist_name: str, videos: List[YoutubeVideo]
+    backup_file_location: str, temp_file_path: str, playlist_name: str, videos: List[YoutubeVideo]
 ):
     backup_util = BackupUtil()
 
     playlist_path = os.path.join(backup_file_location, playlist_name)
     os.makedirs(playlist_path, exist_ok=True)
     for video in videos:
-        print(f"\nProcessing {video.video_title}...")
-        if backup_util.already_downloaded(video.video_url):
-            print("Already downloaded")
-            continue
+        try:
+            _process_video(video, playlist_path, temp_file_path, playlist_name, backup_util)
+        except Exception as e:
+            print(f"Error: {e}")
 
-        slugified_video_title = _slugify(video.video_title) + f"={video.video_id}"
-        video_file_path = os.path.join(playlist_path, f"{slugified_video_title}.txt")
-        if os.path.exists(video_file_path):
-            print(f"Already saved metadata for video {playlist_name}: {video.video_title}")
-        else:
-            print(f"Saving metadata for video {playlist_name}: {video.video_title}")
-            with open(video_file_path, mode="w", encoding="utf-8") as video_file:
-                video_file.write(video.video_url)
-                video_file.write("\n")
-                video_file.write(video.video_title)
-                video_file.write("\n")
-                video_file.write(video.description)
 
-        # Save video and audio for select playlists
-        if playlist_name.lower().startswith("save video"):
-            print("Saving video...")
-            backup_util.save_video(video.video_url, playlist_path, slugified_video_title, temp_file_location)
-        else:
-            # Save only audio for all other playlists
-            print("Saving audio...")
-            backup_util.save_audio(video.video_url, playlist_path, slugified_video_title)
+def _process_video(
+    video: YoutubeVideo, playlist_path: str, temp_file_path: str, playlist_name: str, backup_util: BackupUtil
+):
+    print(f"\nProcessing {video.video_title}...")
+    if backup_util.already_downloaded(video.video_url):
+        print("Already downloaded")
+        return
 
-        backup_util.record_download(video.video_url)
+    slugified_video_title = _slugify(video.video_title) + f"={video.video_id}"
+    video_file_path = os.path.join(playlist_path, f"{slugified_video_title}.txt")
+    if os.path.exists(video_file_path):
+        print(f"Already saved metadata for video {playlist_name}: {video.video_title}")
+    else:
+        print(f"Saving metadata for video {playlist_name}: {video.video_title}")
+        with open(video_file_path, mode="w", encoding="utf-8") as video_file:
+            video_file.write(video.video_url)
+            video_file.write("\n")
+            video_file.write(video.video_title)
+            video_file.write("\n")
+            video_file.write(video.description)
+
+    # Save video and audio for select playlists
+    if playlist_name.lower().startswith("save video"):
+        print("Saving video...")
+        backup_util.save_video(video.video_url, playlist_path, slugified_video_title, temp_file_path)
+    else:
+        # Save only audio for all other playlists
+        print("Saving audio...")
+        backup_util.save_audio(video.video_url, playlist_path, slugified_video_title)
+
+    backup_util.record_download(video.video_url)
 
 
 def main():

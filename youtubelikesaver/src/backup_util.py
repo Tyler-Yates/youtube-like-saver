@@ -76,3 +76,6 @@ class BackupUtil:
                     return
             except Exception as e:
                 LOG.error(f"Error downloading {video_url}", e)
+
+        # Raise exception if we were never able to download
+        raise ValueError(f"Could not download video {video_url}")
