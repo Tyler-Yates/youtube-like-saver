@@ -29,8 +29,8 @@ class BackupUtil:
         with open(COMPLETED_DOWNLOADS_FILENAME, mode="r") as completed_downloads_file:
             return json.load(completed_downloads_file)
 
-    def already_downloaded(self, video_url: str):
-        return video_url in self.completed_downloads
+    def already_downloaded(self, video_url: str, playlist_name: str):
+        return video_url in self.completed_downloads.get(playlist_name, [])
 
     def record_download(self, video_url: str, playlist_name: str):
         if playlist_name in self.completed_downloads:

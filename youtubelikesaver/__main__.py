@@ -51,7 +51,7 @@ def _process_video(
     chrome_cookies: bool,
 ):
     print(f"\nProcessing {video.video_title}...")
-    if backup_util.already_downloaded(video.video_url):
+    if backup_util.already_downloaded(video.video_url, playlist_name):
         print("Already downloaded")
         return
 
