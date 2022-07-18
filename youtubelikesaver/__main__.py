@@ -9,7 +9,6 @@ from youtubelikesaver.src.youtube_client import YoutubeClient
 from youtubelikesaver.src.youtube_video import YoutubeVideo
 
 CLIENT_SECRETS_FILE_NAME = "client_secrets.json"
-BACKUP_FILE_NAME = "liked_videos.json"
 
 
 def _slugify(value, allow_unicode=False):
@@ -37,12 +36,17 @@ def backup_playlist_video_information(
     playlist_path = os.path.join(backup_file_location, playlist_name)
     os.makedirs(playlist_path, exist_ok=True)
     for video in videos:
+        print(f"\nProcessing {video.video_title}...")
+        if backup_util.already_downloaded(video.video_url):
+            print("Already downloaded")
+            continue
+
         slugified_video_title = _slugify(video.video_title) + f"={video.video_id}"
         video_file_path = os.path.join(playlist_path, f"{slugified_video_title}.txt")
         if os.path.exists(video_file_path):
-            print(f"Already saved data for video {playlist_name}: {video.video_title}")
+            print(f"Already saved metadata for video {playlist_name}: {video.video_title}")
         else:
-            print(f"Saving data for video {playlist_name}: {video.video_title}")
+            print(f"Saving metadata for video {playlist_name}: {video.video_title}")
             with open(video_file_path, mode="w", encoding="utf-8") as video_file:
                 video_file.write(video.video_url)
                 video_file.write("\n")
@@ -58,6 +62,8 @@ def backup_playlist_video_information(
             # Save only audio for all other playlists
             print("Saving audio...")
             backup_util.save_audio(video.video_url, playlist_path, slugified_video_title)
+
+        backup_util.record_download(video.video_url)
 
 
 def main():

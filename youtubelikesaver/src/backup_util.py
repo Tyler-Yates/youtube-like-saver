@@ -1,5 +1,6 @@
 import logging
-from typing import Dict
+import os
+from typing import Dict, Set
 
 import yt_dlp
 
@@ -8,13 +9,36 @@ MAX_RETRIES = 5
 MAX_VIDEO_DOWNLOAD_SIZE = "200M"
 MAX_AUDIO_DOWNLOAD_SIZE = "75M"
 
+COMPLETED_DOWNLOADS_FILENAME = "completed_downloads.txt"
+
 LOG = logging.getLogger("BackupUtil")
 logging.basicConfig()
 
 
 class BackupUtil:
     def __init__(self):
-        pass
+        self.completed_downloads = self._read_already_downloaded()
+
+    @staticmethod
+    def _read_already_downloaded() -> Set[str]:
+        completed_downloads = set()
+        if not os.path.exists(COMPLETED_DOWNLOADS_FILENAME):
+            return completed_downloads
+
+        with open(COMPLETED_DOWNLOADS_FILENAME, mode="r") as completed_downloads_file:
+            for line in completed_downloads_file.readlines():
+                completed_downloads.add(line.strip())
+
+        return completed_downloads
+
+    def already_downloaded(self, video_url: str):
+        return video_url in self.completed_downloads
+
+    def record_download(self, video_url: str):
+        self.completed_downloads.add(video_url)
+        with open(COMPLETED_DOWNLOADS_FILENAME, mode="a+", encoding="utf-8") as completed_downloads_file:
+            completed_downloads_file.write(video_url)
+            completed_downloads_file.write("\n")
 
     def save_video(self, video_url: str, output_path: str, output_file_name: str, temp_file_location: str = None):
         if temp_file_location is None:
