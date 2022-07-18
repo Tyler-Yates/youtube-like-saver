@@ -6,7 +6,7 @@ client_secrets.json
 credentials.pickle
 
 # Data
-liked_videos.json
+completed_downloads.txt
 
 # IntelliJ
 /.idea/
