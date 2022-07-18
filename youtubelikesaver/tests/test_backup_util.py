@@ -9,7 +9,7 @@ class TestBackupUtil:
     def test_save_video(self, tmpdir):
         backup_util = BackupUtil()
         video_title = "temp"
-        backup_util.save_video(TEST_VIDEO_URL, str(tmpdir), video_title)
+        backup_util.save_video(TEST_VIDEO_URL, str(tmpdir), video_title, chrome_cookies=False)
 
         listdir = os.listdir(os.path.join(tmpdir))
         print(listdir)
@@ -18,7 +18,7 @@ class TestBackupUtil:
     def test_save_audio(self, tmpdir):
         backup_util = BackupUtil()
         video_title = "temp"
-        backup_util.save_audio(TEST_VIDEO_URL, str(tmpdir), video_title)
+        backup_util.save_audio(TEST_VIDEO_URL, str(tmpdir), video_title, chrome_cookies=False)
 
         listdir = os.listdir(os.path.join(tmpdir))
         print(listdir)

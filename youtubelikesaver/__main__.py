@@ -29,7 +29,7 @@ def _slugify(value, allow_unicode=False):
 
 
 def backup_playlist_video_information(
-    backup_file_location: str, temp_file_path: str, playlist_name: str, videos: List[YoutubeVideo]
+    backup_file_location: str, temp_file_path: str, playlist_name: str, videos: List[YoutubeVideo], chrome_cookies: bool
 ):
     backup_util = BackupUtil()
 
@@ -37,13 +37,18 @@ def backup_playlist_video_information(
     os.makedirs(playlist_path, exist_ok=True)
     for video in videos:
         try:
-            _process_video(video, playlist_path, temp_file_path, playlist_name, backup_util)
+            _process_video(video, playlist_path, temp_file_path, playlist_name, backup_util, chrome_cookies)
         except Exception as e:
             print(f"Error: {e}")
 
 
 def _process_video(
-    video: YoutubeVideo, playlist_path: str, temp_file_path: str, playlist_name: str, backup_util: BackupUtil
+    video: YoutubeVideo,
+    playlist_path: str,
+    temp_file_path: str,
+    playlist_name: str,
+    backup_util: BackupUtil,
+    chrome_cookies: bool,
 ):
     print(f"\nProcessing {video.video_title}...")
     if backup_util.already_downloaded(video.video_url):
@@ -66,16 +71,17 @@ def _process_video(
     # Save video and audio for select playlists
     if playlist_name.lower().startswith("save video"):
         print("Saving video...")
-        backup_util.save_video(video.video_url, playlist_path, slugified_video_title, temp_file_path)
+        backup_util.save_video(video.video_url, playlist_path, slugified_video_title, temp_file_path, chrome_cookies)
     else:
         # Save only audio for all other playlists
         print("Saving audio...")
-        backup_util.save_audio(video.video_url, playlist_path, slugified_video_title)
+        backup_util.save_audio(video.video_url, playlist_path, slugified_video_title, chrome_cookies)
 
-    backup_util.record_download(video.video_url)
+    backup_util.record_download(video.video_url, playlist_name)
 
 
 def main():
+    chrome_cookies = False
     if len(sys.argv) == 1:
         backup_file_location = ""
         temp_file_location = ""
@@ -85,6 +91,11 @@ def main():
     elif len(sys.argv) == 3:
         backup_file_location = sys.argv[1]
         temp_file_location = sys.argv[2]
+    elif len(sys.argv) == 4:
+        backup_file_location = sys.argv[1]
+        temp_file_location = sys.argv[2]
+        if "--chrome-cookies" == sys.argv[3]:
+            chrome_cookies = True
     else:
         print("Incorrect number of arguments.")
         sys.exit(1)
@@ -94,7 +105,9 @@ def main():
     playlist_name_to_videos = youtube_client.get_playlists_and_liked_videos()
 
     for playlist_name, playlist_videos in playlist_name_to_videos.items():
-        backup_playlist_video_information(backup_file_location, temp_file_location, playlist_name, playlist_videos)
+        backup_playlist_video_information(
+            backup_file_location, temp_file_location, playlist_name, playlist_videos, chrome_cookies
+        )
 
 
 if __name__ == "__main__":

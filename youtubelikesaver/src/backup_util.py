@@ -1,6 +1,7 @@
+import json
 import logging
 import os
-from typing import Dict, Set
+from typing import Dict, List
 
 import yt_dlp
 
@@ -9,7 +10,7 @@ MAX_RETRIES = 5
 MAX_VIDEO_DOWNLOAD_SIZE = "200M"
 MAX_AUDIO_DOWNLOAD_SIZE = "75M"
 
-COMPLETED_DOWNLOADS_FILENAME = "completed_downloads.txt"
+COMPLETED_DOWNLOADS_FILENAME = "completed_downloads.json"
 
 LOG = logging.getLogger("BackupUtil")
 logging.basicConfig()
@@ -20,27 +21,34 @@ class BackupUtil:
         self.completed_downloads = self._read_already_downloaded()
 
     @staticmethod
-    def _read_already_downloaded() -> Set[str]:
-        completed_downloads = set()
+    def _read_already_downloaded() -> Dict[str, List[str]]:
+        completed_downloads = dict()
         if not os.path.exists(COMPLETED_DOWNLOADS_FILENAME):
             return completed_downloads
 
         with open(COMPLETED_DOWNLOADS_FILENAME, mode="r") as completed_downloads_file:
-            for line in completed_downloads_file.readlines():
-                completed_downloads.add(line.strip())
-
-        return completed_downloads
+            return json.load(completed_downloads_file)
 
     def already_downloaded(self, video_url: str):
         return video_url in self.completed_downloads
 
-    def record_download(self, video_url: str):
-        self.completed_downloads.add(video_url)
-        with open(COMPLETED_DOWNLOADS_FILENAME, mode="a+", encoding="utf-8") as completed_downloads_file:
-            completed_downloads_file.write(video_url)
-            completed_downloads_file.write("\n")
+    def record_download(self, video_url: str, playlist_name: str):
+        if playlist_name in self.completed_downloads:
+            self.completed_downloads[playlist_name].append(video_url)
+        else:
+            self.completed_downloads[playlist_name] = [video_url]
 
-    def save_video(self, video_url: str, output_path: str, output_file_name: str, temp_file_location: str = None):
+        with open(COMPLETED_DOWNLOADS_FILENAME, mode="w+", encoding="utf-8") as completed_downloads_file:
+            json.dump(self.completed_downloads, completed_downloads_file, indent=4)
+
+    def save_video(
+        self,
+        video_url: str,
+        output_path: str,
+        output_file_name: str,
+        temp_file_location: str = None,
+        chrome_cookies: bool = False,
+    ):
         if temp_file_location is None:
             temp_file_location = output_path
 
@@ -53,9 +61,13 @@ class BackupUtil:
             "windowsfilenames": True,
             "overwrites": False,
         }
+
+        if chrome_cookies:
+            ydl_config["cookiesfrombrowser"] = ("chrome",)
+
         self._save_with_retry(video_url, ydl_config)
 
-    def save_audio(self, video_url: str, output_path: str, output_file_name: str):
+    def save_audio(self, video_url: str, output_path: str, output_file_name: str, chrome_cookies: bool = False):
         ydl_config = {
             "format": "bestaudio",
             "format_sort": [f"size:{MAX_AUDIO_DOWNLOAD_SIZE}"],
@@ -65,6 +77,10 @@ class BackupUtil:
             "writethumbnail": True,
             "overwrites": False,
         }
+
+        if chrome_cookies:
+            ydl_config["cookiesfrombrowser"] = ("chrome",)
+
         self._save_with_retry(video_url, ydl_config)
 
     @staticmethod
