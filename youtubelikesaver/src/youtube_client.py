@@ -95,10 +95,16 @@ class YoutubeClient:
         while response is not None:
             for playlist_video in response["items"]:
                 playlist_videos.append(YoutubeVideo(playlist_video))
-            if response.get("nextPageToken"):
+            next_page_token = response.get("nextPageToken")
+            if next_page_token:
                 response = (
                     self.youtube.playlistItems()
-                    .list(playlistId=playlist_id, part="snippet,contentDetails,id", maxResults=MAX_RESULTS)
+                    .list(
+                        playlistId=playlist_id,
+                        pageToken=next_page_token,
+                        part="snippet,contentDetails,id",
+                        maxResults=MAX_RESULTS,
+                    )
                     .execute()
                 )
             else:
