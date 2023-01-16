@@ -73,8 +73,9 @@ class YoutubeClient:
                 playlist_name = playlist["snippet"]["title"]
                 print(f"Processing playlist {playlist_name}...")
                 playlist_name_to_videos[playlist_name] = self._get_videos_for_playlist(playlist_id)
-            if response.get("nextPageToken"):
-                response = self.youtube.playlists().list(part="id,snippet", mine=True).execute()
+            next_page_token = response.get("nextPageToken")
+            if next_page_token:
+                response = self.youtube.playlists().list(part="id,snippet", pageToken=next_page_token, mine=True).execute()
             else:
                 response = None
 
